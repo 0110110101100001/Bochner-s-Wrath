@@ -1,0 +1,198 @@
+@use '../../styles/tokens' as *;
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(720px, 72vw);
+  padding: 8px 8px 8px 16px;
+  border: 3px solid #4a2d13;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 246, 224, 0.2), rgba(255, 246, 224, 0) 46%),
+    linear-gradient(180deg, #f3e2bd, #dcc292 58%, #c2a165 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -8px 14px rgba(120, 84, 34, 0.32),
+    0 10px 24px rgba(8, 10, 26, 0.45),
+    0 3px 0 rgba(60, 36, 14, 0.6);
+  pointer-events: auto;
+  transition:
+    transform 0.3s $ease-spring,
+    box-shadow 0.3s $ease-out,
+    border-color 0.3s ease;
+  animation: search-in 0.7s $ease-spring backwards;
+  animation-delay: 0.18s;
+
+  &.is-focused {
+    transform: translateY(-3px) scale(1.022);
+    border-color: #6b4420;
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -8px 14px rgba(120, 84, 34, 0.28),
+      0 16px 34px rgba(8, 10, 26, 0.5),
+      0 0 0 4px rgba(255, 208, 110, 0.35),
+      0 3px 0 rgba(60, 36, 14, 0.6);
+  }
+
+  &.is-launching {
+    animation: search-launch 0.24s $ease-out forwards;
+  }
+}
+
+@keyframes search-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes search-launch {
+  0% {
+    transform: translateY(-3px) scale(1.022);
+  }
+  45% {
+    transform: translateY(1px) scale(0.97);
+  }
+  100% {
+    transform: translateY(-8px) scale(1.04);
+    opacity: 0.55;
+  }
+}
+
+.search__lens {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: #7b5a2a;
+  flex: none;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.search__input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  outline: none;
+  color: #3b2a14;
+  font-size: clamp(15px, 1.3vw, 19px);
+  font-weight: 700;
+
+  &::placeholder {
+    color: rgba(90, 66, 32, 0.62);
+    font-weight: 700;
+  }
+}
+
+.search__go {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  padding: 0;
+  border: 2px solid rgba(22, 14, 5, 0.7);
+  border-radius: 50%;
+  background: linear-gradient(180deg, #7fd45a, #4aa233);
+  color: #fff;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.45),
+    0 4px 0 #2c6a1f,
+    0 6px 12px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.1s $ease-out,
+    box-shadow 0.1s $ease-out,
+    opacity 0.2s ease;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.35),
+      0 1px 0 #2c6a1f;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+/* Small carved studs on each end of the bar. */
+.search__rune {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3c4, #b98a33);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.search__rune--l {
+  left: 6px;
+}
+
+.search__rune--r {
+  right: 58px;
+}
+
+/* ----------------------------------------------------- upgrade cosmetics */
+
+.search--lv2 {
+  border-color: #6b4420;
+
+  .search__rune {
+    opacity: 1;
+  }
+}
+
+.search--lv3 {
+  border-color: #a9791f;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -8px 14px rgba(120, 84, 34, 0.32),
+    0 0 0 3px rgba(255, 195, 43, 0.55),
+    0 10px 24px rgba(8, 10, 26, 0.45);
+
+  .search__rune {
+    opacity: 1;
+  }
+}
+
+.search--lv4 {
+  border-color: #ffd672;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -8px 14px rgba(120, 84, 34, 0.3),
+    0 0 0 3px rgba(255, 214, 114, 0.75),
+    0 0 34px rgba(255, 200, 90, 0.45),
+    0 10px 24px rgba(8, 10, 26, 0.45);
+
+  .search__rune {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(255, 214, 114, 0.9);
+  }
+
+  .search__lens {
+    color: #a9791f;
+  }
+}

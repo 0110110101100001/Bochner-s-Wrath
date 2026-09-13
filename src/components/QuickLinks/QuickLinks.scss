@@ -1,0 +1,273 @@
+@use '../../styles/tokens' as *;
+
+.quick-links {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(8px, 1vw, 18px);
+  pointer-events: auto;
+  flex-wrap: wrap;
+}
+
+.signpost-wrap {
+  position: relative;
+  display: block;
+  animation: signpost-rise 0.6s $ease-spring backwards;
+}
+
+@keyframes signpost-rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px) rotate(-3deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.signpost {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: clamp(84px, 7.5vw, 116px);
+  padding: 0;
+  border: 0;
+  background: none;
+  text-decoration: none;
+  transform-origin: 50% 100%;
+  transition: transform 0.3s $ease-spring;
+  animation: signpost-rise 0.6s $ease-spring backwards;
+
+  &:hover {
+    transform: translateY(-5px) rotate(-1.4deg);
+
+    .signpost__board {
+      box-shadow:
+        inset 0 2px 0 rgba(255, 236, 200, 0.5),
+        inset 0 -6px 10px rgba(0, 0, 0, 0.28),
+        0 12px 22px rgba(6, 10, 22, 0.5),
+        0 3px 0 rgba(40, 24, 10, 0.6);
+    }
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.97);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    .signpost__board {
+      box-shadow:
+        inset 0 2px 0 rgba(255, 236, 200, 0.5),
+        0 0 0 3px rgba(255, 236, 160, 0.95);
+    }
+  }
+}
+
+.signpost--add {
+  cursor: pointer;
+  animation-delay: 0.4s;
+
+  .signpost__board {
+    background:
+      repeating-linear-gradient(96deg, rgba(0, 0, 0, 0.05) 0 6px, rgba(255, 255, 255, 0.03) 6px 13px),
+      linear-gradient(180deg, #7e6644, #5b4830);
+    border-style: dashed;
+  }
+
+  .signpost__label {
+    opacity: 0.8;
+  }
+}
+
+.signpost__board {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 10px 8px 9px;
+  border: 3px solid #40270f;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(96deg, rgba(0, 0, 0, 0.06) 0 6px, rgba(255, 255, 255, 0.04) 6px 13px),
+    linear-gradient(180deg, #b07a45, #8a5a33 52%, #6b4423);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 236, 200, 0.45),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(6, 10, 22, 0.45),
+    0 3px 0 rgba(40, 24, 10, 0.6);
+  transition: box-shadow 0.24s ease;
+
+  /* two nail heads */
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f0e0bd, #7a6236);
+  }
+
+  &::before {
+    left: 7px;
+  }
+
+  &::after {
+    right: 7px;
+  }
+}
+
+.signpost__icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: rgba(12, 8, 3, 0.42);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45);
+
+  img {
+    display: block;
+    border-radius: 4px;
+  }
+
+  .glyph {
+    width: 18px;
+    height: 18px;
+    color: #f3dcae;
+  }
+}
+
+.signpost__mono {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.signpost__label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(11px, 0.85vw, 13px);
+  @include game-text(rgba(24, 14, 4, 0.9), 1px);
+}
+
+.signpost__post {
+  width: 12px;
+  height: clamp(14px, 1.6vh, 22px);
+  background: linear-gradient(90deg, #5c3a1e, #8a5a33 40%, #4a2d13);
+  border: 2px solid #35200c;
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+}
+
+/* Always on show, just quiet until you go near it — a pencil that only exists
+   on hover is a pencil nobody finds. */
+.signpost__edit {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid rgba(20, 12, 5, 0.85);
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffd964, #e09a12);
+  color: #4a2a02;
+  opacity: 0.72;
+  transform: scale(0.88);
+  transition:
+    opacity 0.16s ease,
+    transform 0.24s $ease-spring;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45);
+
+  svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    transform: scale(1.12);
+    outline: 3px solid rgba(255, 255, 255, 0.95);
+    outline-offset: 1px;
+  }
+}
+
+.signpost-wrap:hover .signpost__edit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* The price on the Build signpost. */
+
+.signpost__price {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 1px;
+  padding: 1px 7px 2px;
+  border-radius: 999px;
+  background: rgba(12, 8, 3, 0.5);
+  font-size: clamp(10px, 0.78vw, 12px);
+  font-variant-numeric: tabular-nums;
+  @include game-text(rgba(18, 10, 4, 0.9), 1px);
+  color: #ffd964;
+
+  .res-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Not enough gold: still clickable, so the Builder can say no out loud. */
+.signpost--add.is-broke {
+  .signpost__board {
+    filter: saturate(0.4) brightness(0.72);
+  }
+
+  .signpost__price {
+    color: #ff9d8a;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    animation: signpost-refuse 0.3s ease-in-out;
+  }
+}
+
+@keyframes signpost-refuse {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}

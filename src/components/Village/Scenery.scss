@@ -1,0 +1,45 @@
+.scenery {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    filter: saturate(var(--scene-saturate)) brightness(var(--scene-brightness));
+    transition: filter 1.8s linear;
+  }
+}
+
+.scenery__shadow {
+  fill: #0b1a2c;
+  opacity: var(--shadow-alpha);
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: skewX(var(--shadow-skew)) scaleX(var(--shadow-stretch));
+  transition:
+    opacity 1.8s linear,
+    transform 1.8s linear;
+}
+
+.scenery__crown {
+  transform-box: view-box;
+  transform-origin: 50% 100%;
+  animation: sway 5.4s ease-in-out infinite alternate;
+}
+
+.scenery--bush .scenery__crown,
+.scenery--rock .scenery__crown {
+  animation-duration: 7.2s;
+}
+
+@keyframes sway {
+  0% {
+    transform: rotate(-1.6deg) skewX(1deg);
+  }
+  100% {
+    transform: rotate(1.6deg) skewX(-1deg);
+  }
+}

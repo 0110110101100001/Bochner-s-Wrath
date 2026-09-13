@@ -1,0 +1,588 @@
+@use '../../styles/tokens' as *;
+
+.builder-anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition-property: transform;
+  will-change: transform;
+}
+
+.builder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6.2%;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  transition: opacity 0.45s ease;
+
+  &.is-gone {
+    opacity: 0;
+  }
+}
+
+.builder__hitbox {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 3px solid rgba(255, 236, 160, 0.9);
+    outline-offset: 4px;
+    border-radius: 12px;
+  }
+}
+
+.builder__flip {
+  display: block;
+  transform-origin: 50% 100%;
+  transition: transform 0.22s $ease-out;
+}
+
+.builder__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 4px 6px rgba(12, 20, 40, 0.28)) saturate(var(--scene-saturate))
+    brightness(var(--scene-brightness));
+  transition: filter 1.8s linear;
+}
+
+.builder__shadow {
+  fill: #0b1a2c;
+  opacity: var(--shadow-alpha);
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: skewX(var(--shadow-skew)) scaleX(var(--shadow-stretch));
+  transition:
+    opacity 1.8s linear,
+    transform 1.8s linear;
+}
+
+/* Parts that only appear in specific moods. */
+.builder__dropped,
+.builder__sparks,
+.builder__mug,
+.builder__zzz,
+.builder__steam {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.builder__body-root,
+.builder__torso,
+.builder__head,
+.builder__leg,
+.builder__arm,
+.builder__hammer,
+.builder__lids,
+.builder__pupil,
+.builder__brows,
+.builder__hat {
+  transform-box: view-box;
+}
+
+.builder__body-root {
+  transform-origin: 60px 156px;
+  animation: bd-breathe 3.6s ease-in-out infinite;
+}
+
+.builder__head {
+  transform-origin: 60px 58px;
+}
+
+.builder__leg--back {
+  transform-origin: 52px 108px;
+}
+
+.builder__leg--front {
+  transform-origin: 70px 108px;
+}
+
+.builder__arm--back {
+  transform-origin: 44px 74px;
+}
+
+.builder__arm--front {
+  transform-origin: 76px 74px;
+}
+
+.builder__lids {
+  transform-origin: 60px 29px;
+  transform: scaleY(0);
+  animation: bd-blink 5.4s infinite;
+}
+
+.builder__hat {
+  transform-origin: 60px 30px;
+}
+
+@keyframes bd-breathe {
+  0%,
+  100% {
+    transform: scaleY(1) translateY(0);
+  }
+  50% {
+    transform: scaleY(1.015) translateY(-1px);
+  }
+}
+
+@keyframes bd-blink {
+  0%,
+  91%,
+  100% {
+    transform: scaleY(0);
+  }
+  93.5%,
+  95.5% {
+    transform: scaleY(1);
+  }
+}
+
+/* ------------------------------------------------------------- walking */
+
+.builder[data-mood='walking'],
+.builder[data-mood='leaving'] {
+  .builder__body-root {
+    animation: bd-bob 0.52s ease-in-out infinite;
+  }
+
+  .builder__leg--front {
+    animation: bd-leg-front 0.52s ease-in-out infinite alternate;
+  }
+
+  .builder__leg--back {
+    animation: bd-leg-back 0.52s ease-in-out infinite alternate;
+  }
+
+  .builder__arm--back {
+    animation: bd-arm-swing 0.52s ease-in-out infinite alternate;
+  }
+
+  .builder__arm--front {
+    animation: bd-arm-swing-rev 0.52s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes bd-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(1deg);
+  }
+}
+
+@keyframes bd-leg-front {
+  from {
+    transform: rotate(-22deg);
+  }
+  to {
+    transform: rotate(24deg);
+  }
+}
+
+@keyframes bd-leg-back {
+  from {
+    transform: rotate(24deg);
+  }
+  to {
+    transform: rotate(-22deg);
+  }
+}
+
+@keyframes bd-arm-swing {
+  from {
+    transform: rotate(18deg);
+  }
+  to {
+    transform: rotate(-18deg);
+  }
+}
+
+@keyframes bd-arm-swing-rev {
+  from {
+    transform: rotate(-14deg);
+  }
+  to {
+    transform: rotate(16deg);
+  }
+}
+
+/* ----------------------------------------------------------- hammering */
+
+.builder[data-mood='hammering'] {
+  .builder__arm--front {
+    animation: bd-hammer 0.62s cubic-bezier(0.3, 0, 0.2, 1) infinite;
+  }
+
+  .builder__body-root {
+    animation: bd-hammer-recoil 0.62s cubic-bezier(0.3, 0, 0.2, 1) infinite;
+  }
+
+  .builder__sparks {
+    animation: bd-sparks 0.62s linear infinite;
+  }
+}
+
+@keyframes bd-hammer {
+  0% {
+    transform: rotate(-62deg);
+  }
+  38% {
+    transform: rotate(-62deg);
+  }
+  56% {
+    transform: rotate(18deg);
+  }
+  70% {
+    transform: rotate(6deg);
+  }
+  100% {
+    transform: rotate(-62deg);
+  }
+}
+
+@keyframes bd-hammer-recoil {
+  0%,
+  50%,
+  100% {
+    transform: translateY(0);
+  }
+  58% {
+    transform: translateY(2px) scaleY(0.985);
+  }
+}
+
+@keyframes bd-sparks {
+  0%,
+  52%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  58% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  74% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+/* ------------------------------------------------------------ sleeping */
+
+.builder[data-mood='sleeping'] {
+  .builder__body-root {
+    animation: bd-snore 3.8s ease-in-out infinite;
+    transform-origin: 60px 156px;
+  }
+
+  .builder__lids {
+    animation: none;
+    transform: scaleY(1);
+  }
+
+  .builder__arm--front {
+    transform: rotate(34deg);
+  }
+
+  .builder__arm--back {
+    transform: rotate(-18deg);
+  }
+
+  .builder__hat {
+    transform: rotate(-9deg) translateY(3px);
+  }
+
+  .builder__zzz {
+    opacity: 1;
+  }
+}
+
+@keyframes bd-snore {
+  0%,
+  100% {
+    transform: rotate(-7deg) scaleY(0.97);
+  }
+  50% {
+    transform: rotate(-7deg) scaleY(1.01) translateY(-2px);
+  }
+}
+
+.zzz {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bd-zzz 3s ease-out infinite;
+  opacity: 0;
+}
+
+.zzz--1 {
+  animation-delay: 1s;
+}
+
+.zzz--2 {
+  animation-delay: 2s;
+}
+
+@keyframes bd-zzz {
+  0% {
+    opacity: 0;
+    transform: translate(0, 8px) scale(0.5);
+  }
+  25% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(10px, -22px) scale(1.2);
+  }
+}
+
+/* ------------------------------------------------------------ drinking */
+
+.builder[data-mood='drinking'] {
+  .builder__arm--front {
+    transform: rotate(-96deg);
+  }
+
+  .builder__mug {
+    opacity: 1;
+    animation: bd-sip 2.6s ease-in-out infinite;
+    transform-box: view-box;
+    transform-origin: 80px 56px;
+  }
+
+  .builder__head {
+    animation: bd-sip-head 2.6s ease-in-out infinite;
+  }
+}
+
+@keyframes bd-sip {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  45%,
+  62% {
+    transform: rotate(-24deg) translate(-4px, 2px);
+  }
+}
+
+@keyframes bd-sip-head {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  45%,
+  62% {
+    transform: rotate(-9deg);
+  }
+}
+
+/* ------------------------------------------------------------- staring */
+
+.builder[data-mood='staring'] {
+  .builder__pupil {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(1.3);
+  }
+
+  .builder__body-root {
+    animation: bd-lean 2.4s ease-in-out infinite;
+  }
+
+  .builder__brows {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes bd-lean {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(1.5deg);
+  }
+}
+
+/* --------------------------------------------------------------- angry */
+
+.builder[data-mood='angry'] {
+  .builder__body-root {
+    animation: bd-rage 0.18s linear infinite;
+  }
+
+  .builder__brows {
+    transform: translateY(4px) rotate(0deg);
+
+    path:first-child {
+      transform: rotate(22deg);
+      transform-origin: 52px 29px;
+    }
+
+    path:last-child {
+      transform: rotate(-22deg);
+      transform-origin: 68px 29px;
+    }
+  }
+
+  .builder__steam {
+    opacity: 1;
+  }
+
+  .builder__arm--front {
+    transform: rotate(-40deg);
+  }
+
+  .builder__arm--back {
+    transform: rotate(30deg);
+  }
+}
+
+@keyframes bd-rage {
+  0%,
+  100% {
+    transform: translate(-1.5px, 0) rotate(-0.8deg);
+  }
+  50% {
+    transform: translate(1.5px, -1px) rotate(0.8deg);
+  }
+}
+
+.steam {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: bd-steam 1.2s ease-out infinite;
+}
+
+.steam--1 {
+  animation-delay: 0.5s;
+}
+
+@keyframes bd-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.6);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px) scale(1.3);
+  }
+}
+
+/* ------------------------------------------------------ dropped hammer */
+
+.builder[data-mood='dropped-hammer'] {
+  .builder__hammer {
+    opacity: 0;
+  }
+
+  .builder__dropped {
+    opacity: 1;
+  }
+
+  .builder__arm--front {
+    transform: rotate(26deg);
+  }
+
+  .builder__head {
+    transform: rotate(6deg) translateY(1px);
+  }
+}
+
+/* -------------------------------------------------------- disappointed */
+
+.builder[data-mood='disappointed'] {
+  .builder__body-root {
+    transform: rotate(4deg) translateY(3px) scaleY(0.96);
+    animation: none;
+  }
+
+  .builder__head {
+    transform: rotate(12deg) translateY(4px);
+  }
+
+  .builder__arm--front {
+    transform: rotate(30deg);
+  }
+
+  .builder__arm--back {
+    transform: rotate(-22deg);
+  }
+
+  .builder__lids {
+    animation: none;
+    transform: scaleY(0.6);
+  }
+}
+
+/* ------------------------------------------------------- speech bubble */
+
+.builder__bubble {
+  position: absolute;
+  left: 50%;
+  bottom: 104%;
+  /* The Builder is only ~6% of the stage wide, so the bubble has to opt out
+     of shrink-to-fit or every line wraps into a column. */
+  width: max-content;
+  min-width: 110px;
+  max-width: min(330px, 34vw);
+  padding: 10px 16px 12px;
+  border: 3px solid #6d4a22;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fdf3da, #eeddb4);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.8),
+    0 10px 20px rgba(10, 6, 2, 0.35);
+  color: #40301a;
+  font-size: clamp(12px, 1.05vw, 16px);
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  transform: translate(-50%, 0);
+  transform-origin: 50% 120%;
+  animation: bubble-pop 0.36s $ease-spring;
+  pointer-events: none;
+  z-index: 5;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    background: #eeddb4;
+    border-right: 3px solid #6d4a22;
+    border-bottom: 3px solid #6d4a22;
+    transform: translate(-50%, -9px) rotate(45deg);
+    border-bottom-right-radius: 4px;
+  }
+}
+
+@keyframes bubble-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}

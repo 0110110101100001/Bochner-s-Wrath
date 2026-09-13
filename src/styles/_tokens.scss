@@ -1,0 +1,76 @@
+// Shared design tokens and mixins. Import with `@use '<path>/tokens' as *;`.
+// Nothing in here emits CSS on its own.
+
+$wood-light: #b07a45;
+$wood: #8a5a33;
+$wood-dark: #5c3a1e;
+$wood-darkest: #3b2413;
+
+$stone-light: #d8dce6;
+$stone: #9aa3b4;
+$stone-dark: #5d6678;
+
+$parchment: #f6e3bd;
+$parchment-dark: #e2c795;
+
+$gold: #ffc32b;
+$gold-deep: #e08c14;
+$elixir: #d36bff;
+$elixir-deep: #8b2fd6;
+$gem: #3ddc84;
+$gem-deep: #16a35c;
+
+$danger: #e2503f;
+$ink: #2c1a0d;
+
+$radius-sm: 8px;
+$radius-md: 14px;
+$radius-lg: 22px;
+
+$ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+$ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+@mixin display-font {
+  font-family: 'Trebuchet MS', 'Segoe UI', 'Verdana', system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/// Chunky outlined game text.
+@mixin game-text($outline: rgba(24, 12, 4, 0.85), $width: 2px) {
+  @include display-font;
+  color: #fff;
+  text-shadow:
+    #{-$width} 0 0 $outline,
+    #{$width} 0 0 $outline,
+    0 #{-$width} 0 $outline,
+    0 #{$width} 0 $outline,
+    0 3px 0 rgba(24, 12, 4, 0.45);
+}
+
+/// Carved wooden plaque used by every floating panel.
+@mixin wood-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 38%),
+    repeating-linear-gradient(
+      92deg,
+      rgba(0, 0, 0, 0.05) 0 7px,
+      rgba(255, 255, 255, 0.035) 7px 15px
+    ),
+    linear-gradient(180deg, $wood-light, $wood 46%, $wood-dark);
+  border: 3px solid $wood-darkest;
+  border-radius: $radius-lg;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 236, 200, 0.35),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.3),
+    0 14px 28px rgba(10, 6, 2, 0.45),
+    0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+/// Recessed stone slot, for lists and readouts sitting inside a wood panel.
+@mixin stone-inset {
+  background: linear-gradient(180deg, rgba(28, 18, 10, 0.55), rgba(48, 32, 18, 0.35));
+  border: 2px solid rgba(20, 12, 5, 0.6);
+  border-radius: $radius-md;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.45);
+}

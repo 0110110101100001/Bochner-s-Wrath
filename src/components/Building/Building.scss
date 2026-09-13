@@ -1,0 +1,814 @@
+@use '../../styles/tokens' as *;
+
+.building {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translate(-50%, -100%);
+  transform-origin: 50% 100%;
+  transition: transform 0.36s $ease-spring;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    transform: translate(-50%, -100%) scale(1.045) translateY(-4px);
+    z-index: 900 !important;
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    .building__art {
+      filter: drop-shadow(0 0 0 rgba(255, 236, 160, 0)) drop-shadow(0 0 6px rgba(255, 236, 160, 0.95));
+    }
+  }
+
+  &.is-poked {
+    animation: building-bounce 0.42s $ease-spring;
+  }
+}
+
+@keyframes building-bounce {
+  0% {
+    transform: translate(-50%, -100%) scale(1);
+  }
+  30% {
+    transform: translate(-50%, -100%) scale(1.09, 0.9);
+  }
+  60% {
+    transform: translate(-50%, -100%) scale(0.96, 1.05);
+  }
+  100% {
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+.building__art {
+  display: block;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    filter: saturate(var(--scene-saturate)) brightness(var(--scene-brightness));
+    transition: filter 1.8s linear;
+  }
+}
+
+/* ------------------------------------------------------------- hover label */
+
+.building__label {
+  position: absolute;
+  left: 50%;
+  bottom: 96%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 14px 8px;
+  border: 2px solid rgba(20, 12, 5, 0.75);
+  border-radius: $radius-md;
+  background: linear-gradient(180deg, rgba(46, 30, 16, 0.95), rgba(28, 18, 9, 0.95));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 160, 0.28),
+    0 8px 18px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translate(-50%, 10px) scale(0.9);
+  transform-origin: 50% 100%;
+  transition:
+    opacity 0.18s ease,
+    transform 0.26s $ease-spring;
+  z-index: 20;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background: rgba(28, 18, 9, 0.95);
+    border-right: 2px solid rgba(20, 12, 5, 0.75);
+    border-bottom: 2px solid rgba(20, 12, 5, 0.75);
+    transform: translate(-50%, -7px) rotate(45deg);
+  }
+}
+
+.building:hover .building__label,
+.building:focus-visible .building__label {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.building__name {
+  @include game-text(rgba(20, 12, 4, 0.9), 1px);
+  font-size: 15px;
+}
+
+.building__blurb {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e8cfa4;
+  opacity: 0.9;
+  max-width: 260px;
+  white-space: normal;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------- scaffolding */
+
+.building__scaffold {
+  position: absolute;
+  inset: 8% -6% 4%;
+  pointer-events: none;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    opacity: 0.85;
+  }
+}
+
+.building__hammer {
+  position: absolute;
+  top: -16%;
+  left: 50%;
+  width: 26%;
+  transform: translateX(-50%);
+  animation: hammer-bob 1.1s ease-in-out infinite;
+  transform-origin: 50% 90%;
+
+  svg {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
+  }
+}
+
+@keyframes hammer-bob {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(-16deg);
+  }
+  50% {
+    transform: translateX(-50%) rotate(14deg) translateY(-6%);
+  }
+}
+
+.building__progress {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -4%;
+  height: 9px;
+  border-radius: 6px;
+  background: rgba(18, 10, 4, 0.8);
+  border: 2px solid rgba(12, 7, 2, 0.9);
+  overflow: hidden;
+}
+
+.building__progress-fill {
+  display: block;
+  height: 100%;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, #7fe0a0, #3ddc84);
+  transition: transform 0.6s linear;
+}
+
+/* ============================================================== art motion */
+/* Shared by every building SVG. All transform/opacity only.                  */
+
+.art {
+  overflow: visible;
+}
+
+.art__shadow {
+  fill: #0b1a2c;
+  opacity: var(--shadow-alpha);
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: skewX(var(--shadow-skew)) scaleX(var(--shadow-stretch));
+  transition:
+    opacity 1.8s linear,
+    transform 1.8s linear;
+}
+
+.win-glow {
+  /* Lights the opening without painting over the detail behind it. */
+  opacity: calc(var(--window-glow) * var(--glow-strength, 0.85)) !important;
+  mix-blend-mode: screen;
+  transition: opacity 1.8s linear;
+}
+
+/* For openings that have detail behind them, like the bookshelf. */
+.win-glow--soft {
+  --glow-strength: 0.32;
+}
+
+/* flames on the Search Hall braziers */
+.art__flame {
+  transform-origin: 50% 100%;
+  animation: flicker 0.9s ease-in-out infinite alternate;
+}
+
+.art__flame--1 {
+  animation-duration: 1.15s;
+  animation-delay: -0.4s;
+}
+
+@keyframes flicker {
+  0% {
+    transform: scale(1, 1) translateY(0);
+    opacity: 0.92;
+  }
+  100% {
+    transform: scale(0.86, 1.14) translateY(-2px);
+    opacity: 1;
+  }
+}
+
+.art__banner {
+  transform-origin: 50% 0;
+  animation: banner-sway 3.6s ease-in-out infinite alternate;
+}
+
+.art__banner--right {
+  animation-delay: -1.4s;
+}
+
+@keyframes banner-sway {
+  0% {
+    transform: rotate(-2.4deg) skewX(1.5deg);
+  }
+  100% {
+    transform: rotate(2.4deg) skewX(-1.5deg);
+  }
+}
+
+.art__lens-glint {
+  animation: glint 6s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes glint {
+  0%,
+  72%,
+  100% {
+    transform: translateX(-18px) skewX(-18deg);
+    opacity: 0;
+  }
+  78% {
+    opacity: 0.6;
+  }
+  86% {
+    transform: translateX(22px) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+.art--hall.is-active .art__lens {
+  animation: lens-pulse 1.4s ease-in-out infinite;
+  transform-origin: 160px 122px;
+  transform-box: view-box;
+}
+
+@keyframes lens-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.art__finial,
+.art__vane {
+  transform-box: view-box;
+  transform-origin: 50% 100%;
+  animation: vane-turn 9s ease-in-out infinite alternate;
+}
+
+@keyframes vane-turn {
+  0% {
+    transform: rotate(-6deg);
+  }
+  100% {
+    transform: rotate(6deg);
+  }
+}
+
+/* clock */
+.clock-hand {
+  transform-box: view-box;
+  transform-origin: 90px 168px;
+}
+
+.clock-hand--hour {
+  animation: hand-spin 43200s linear infinite;
+}
+
+.clock-hand--minute {
+  animation: hand-spin 3600s linear infinite;
+}
+
+.clock-hand--second {
+  animation: hand-spin 60s steps(60, end) infinite;
+}
+
+@keyframes hand-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.art__pendulum {
+  transform-box: view-box;
+  transform-origin: 90px 212px;
+  animation: pendulum 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes pendulum {
+  0% {
+    transform: rotate(-13deg);
+  }
+  100% {
+    transform: rotate(13deg);
+  }
+}
+
+.art__frame.is-legendary,
+.art__legendary {
+  animation: legendary-glow 3.2s ease-in-out infinite;
+  transform-box: view-box;
+  transform-origin: center;
+}
+
+@keyframes legendary-glow {
+  0%,
+  100% {
+    opacity: 0.4;
+    filter: drop-shadow(0 0 2px #ffe98a);
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px #ffe98a);
+  }
+}
+
+/* gold */
+.sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sparkle-pop 3.4s ease-in-out infinite;
+  opacity: 0;
+}
+
+.sparkle--1 {
+  animation-delay: 1.1s;
+}
+
+.sparkle--2 {
+  animation-delay: 2.3s;
+}
+
+@keyframes sparkle-pop {
+  0%,
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(0.2) rotate(0deg);
+  }
+  82% {
+    opacity: 1;
+    transform: scale(1.1) rotate(40deg);
+  }
+  92% {
+    opacity: 0.5;
+    transform: scale(0.7) rotate(70deg);
+  }
+}
+
+/* elixir */
+.bubble {
+  animation: bubble-rise 4.4s linear infinite;
+  transform-box: view-box;
+}
+
+@keyframes bubble-rise {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-68px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+.art__valve {
+  transform-box: view-box;
+  transform-origin: 100px 66px;
+  animation: valve-turn 14s linear infinite;
+}
+
+@keyframes valve-turn {
+  0%,
+  60% {
+    transform: rotate(0deg);
+  }
+  75%,
+  100% {
+    transform: rotate(90deg);
+  }
+}
+
+.art__drip {
+  transform-box: view-box;
+  animation: drip 5s ease-in infinite;
+  opacity: 0;
+}
+
+@keyframes drip {
+  0%,
+  70% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  76% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  96% {
+    transform: translateY(34px) scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* builder hut smoke */
+.puff {
+  transform-box: view-box;
+  transform-origin: 171px 46px;
+  opacity: 0;
+  animation: puff-rise 4.6s ease-out infinite;
+}
+
+.puff--1 {
+  animation-delay: 1.5s;
+}
+
+.puff--2 {
+  animation-delay: 3s;
+}
+
+@keyframes puff-rise {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.3);
+  }
+  18% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-16px, -62px) scale(1.5);
+  }
+}
+
+/* laboratory */
+.art__flash {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: lab-flash 8.5s ease-out infinite;
+}
+
+@keyframes lab-flash {
+  0%,
+  88%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  90% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  95% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+.art__spark {
+  opacity: 0;
+  animation: spark-crackle 8.5s ease-out infinite;
+}
+
+@keyframes spark-crackle {
+  0%,
+  87%,
+  100% {
+    opacity: 0;
+  }
+  89%,
+  92% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0;
+  }
+}
+
+/* wall */
+.art__wall-aura {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: aura-breathe 3s ease-in-out infinite;
+}
+
+@keyframes aura-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.14;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.3;
+  }
+}
+
+.art__crystal {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: crystal-shine 2.8s ease-in-out infinite;
+}
+
+.art__crystal--1 {
+  animation-delay: -0.9s;
+}
+
+.art__crystal--2 {
+  animation-delay: -1.8s;
+}
+
+@keyframes crystal-shine {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px #9befff);
+  }
+}
+
+.art__lava path {
+  animation: lava-pulse 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes lava-pulse {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 5px #ff7a1a);
+  }
+}
+
+/* ============================================================ war damage */
+/* Applied only by the screensaver replay; nothing here is persisted.        */
+
+.building__art {
+  transition:
+    filter 0.6s ease,
+    transform 0.55s $ease-spring;
+}
+
+.building.is-wrecked .building__art {
+  transform: rotate(-3.5deg) translateY(3%) scaleY(0.93);
+  filter: brightness(0.42) saturate(0.35) contrast(1.1);
+}
+
+.building__fire {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  /* Sized in px as well, so a tall tower and a wide hall burn alike. */
+  width: 48%;
+  min-width: 38px;
+  max-width: 86px;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 3;
+  animation: wreck-in 0.4s $ease-spring;
+
+  > svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 16px rgba(255, 140, 40, 0.75));
+  }
+}
+
+@keyframes wreck-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+.fire-flame {
+  transform-box: view-box;
+  transform-origin: 50% 100%;
+  animation: fire-lick 0.62s ease-in-out infinite alternate;
+}
+
+.fire-flame--b {
+  animation-duration: 0.48s;
+  animation-delay: -0.2s;
+}
+
+.fire-flame--c {
+  animation-duration: 0.55s;
+  animation-delay: -0.36s;
+}
+
+@keyframes fire-lick {
+  0% {
+    transform: scale(1, 1) translateY(0);
+  }
+  100% {
+    transform: scale(0.82, 1.16) translateY(-3px);
+  }
+}
+
+.building__smoke {
+  position: absolute;
+  inset: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.wreck-puff {
+  transform-box: view-box;
+  transform-origin: 50px 70px;
+  opacity: 0;
+  animation: wreck-smoke 2.4s ease-out infinite;
+}
+
+.wreck-puff--1 {
+  animation-delay: 0.8s;
+}
+
+.wreck-puff--2 {
+  animation-delay: 1.6s;
+}
+
+@keyframes wreck-smoke {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.3);
+  }
+  20% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-14px, -74px) scale(1.7);
+  }
+}
+
+/* The estimate a building puts up while it is being attacked. */
+
+.building__shield {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 118%;
+  height: 100%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 4;
+  animation: shield-up 0.32s $ease-spring;
+}
+
+@keyframes shield-up {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+.building__shield-dome {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(150, 220, 255, 0.75);
+  border-radius: 50% 50% 26% 26% / 62% 62% 14% 14%;
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    rgba(150, 220, 255, 0.06) 0%,
+    rgba(120, 200, 255, 0.2) 74%,
+    rgba(90, 180, 255, 0.32) 100%
+  );
+  box-shadow:
+    inset 0 0 22px rgba(180, 235, 255, 0.5),
+    0 0 18px rgba(120, 200, 255, 0.35);
+  animation: shield-flicker 0.9s ease-in-out infinite;
+}
+
+@keyframes shield-flicker {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  40% {
+    opacity: 0.55;
+  }
+  70% {
+    opacity: 1;
+  }
+}
+
+.building__shield-text {
+  position: absolute;
+  left: 50%;
+  top: -6%;
+  transform: translateX(-50%);
+  padding: 2px 8px 3px;
+  border: 2px solid rgba(16, 48, 72, 0.85);
+  border-radius: 7px;
+  background: rgba(14, 38, 58, 0.9);
+  color: #d6f2ff;
+  font-family: 'Cambria Math', 'Times New Roman', serif;
+  font-size: clamp(9px, 0.78vw, 13px);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  /* Long estimates wrap rather than running off across the village. */
+  max-width: 150px;
+}
+
+/* The estimate held: the dome goes green and flares once. */
+
+.building__shield.is-held {
+  animation: shield-hold 0.55s $ease-spring;
+
+  .building__shield-dome {
+    border-color: rgba(140, 255, 190, 0.85);
+    background: radial-gradient(
+      ellipse at 50% 40%,
+      rgba(140, 255, 190, 0.08) 0%,
+      rgba(90, 240, 160, 0.24) 74%,
+      rgba(50, 220, 130, 0.36) 100%
+    );
+    box-shadow:
+      inset 0 0 26px rgba(160, 255, 205, 0.6),
+      0 0 26px rgba(80, 240, 150, 0.55);
+    animation: none;
+  }
+
+  .building__shield-text {
+    border-color: rgba(14, 66, 40, 0.9);
+    background: rgba(12, 58, 34, 0.92);
+    color: #c8ffe2;
+  }
+}
+
+@keyframes shield-hold {
+  0% {
+    transform: translateX(-50%) scale(1);
+  }
+  45% {
+    transform: translateX(-50%) scale(1.12);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+}

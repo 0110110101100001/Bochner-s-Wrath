@@ -1,0 +1,238 @@
+@use '../../styles/tokens' as *;
+
+/* ------------------------------------------------- storage collect bubbles */
+
+.loot {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 7%;
+  min-width: 58px;
+  padding: 6px 7px 7px;
+  border: 3px solid rgba(20, 12, 5, 0.85);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(58, 38, 18, 0.95), rgba(32, 20, 9, 0.95));
+  box-shadow:
+    inset 0 2px 0 rgba(255, 226, 170, 0.35),
+    0 8px 18px rgba(6, 10, 22, 0.5);
+  transform: translate(-50%, -100%);
+  transform-origin: 50% 120%;
+  /* Loot is UI, not scenery: it must never end up behind a roof. */
+  z-index: 930;
+  animation:
+    loot-in 0.5s $ease-spring backwards,
+    loot-bob 2.4s ease-in-out 0.5s infinite;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background: rgba(32, 20, 9, 0.95);
+    border-right: 3px solid rgba(20, 12, 5, 0.85);
+    border-bottom: 3px solid rgba(20, 12, 5, 0.85);
+    transform: translate(-50%, -8px) rotate(45deg);
+  }
+
+  &:hover {
+    filter: brightness(1.12);
+  }
+
+  &:active {
+    transform: translate(-50%, -96%) scale(0.93);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(255, 236, 160, 0.95);
+    outline-offset: 3px;
+  }
+}
+
+@keyframes loot-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+@keyframes loot-bob {
+  0%,
+  100% {
+    transform: translate(-50%, -100%);
+  }
+  50% {
+    transform: translate(-50%, -108%);
+  }
+}
+
+.loot__icon {
+  display: block;
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+
+  .res-icon {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.loot__amount {
+  @include game-text(rgba(18, 10, 4, 0.9), 1.5px);
+  font-size: clamp(12px, 1vw, 15px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.loot__meter {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(10, 6, 2, 0.7);
+  overflow: hidden;
+}
+
+.loot__meter-fill {
+  display: block;
+  height: 100%;
+  transform-origin: 0 50%;
+  transition: transform 1s linear;
+}
+
+.loot--gold .loot__meter-fill {
+  background: linear-gradient(90deg, #ffd964, #e09a12);
+}
+
+.loot--elixir .loot__meter-fill {
+  background: linear-gradient(90deg, #d98cff, #8b2fd6);
+}
+
+/* ------------------------------------------------------------ loose drops */
+
+.drop {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 3.6%;
+  min-width: 32px;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translate(-50%, -50%);
+  z-index: 925;
+  animation:
+    drop-land 0.5s $ease-spring backwards,
+    drop-idle 1.9s ease-in-out 0.5s infinite;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  .res-icon {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.45));
+  }
+
+  &:hover {
+    filter: brightness(1.15);
+  }
+
+  &:active {
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(255, 236, 160, 0.95);
+    outline-offset: 3px;
+    border-radius: 50%;
+  }
+}
+
+/* Translate and opacity only. A scale here would leave the drop rendered at
+   half size whenever the animation timeline is parked (background tab). */
+@keyframes drop-land {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -240%);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes drop-idle {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, -66%);
+  }
+}
+
+/* A halo so a coin in long grass is still findable. */
+.drop__glint {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  animation: glint-pulse 1.9s ease-in-out infinite;
+}
+
+.drop--gold .drop__glint {
+  background: radial-gradient(circle, rgba(255, 216, 110, 0.55), rgba(255, 216, 110, 0) 66%);
+}
+
+.drop--elixir .drop__glint {
+  background: radial-gradient(circle, rgba(214, 140, 255, 0.55), rgba(214, 140, 255, 0) 66%);
+}
+
+.drop--gems {
+  width: 4%;
+  min-width: 34px;
+}
+
+.drop--gems .drop__glint {
+  background: radial-gradient(circle, rgba(110, 255, 178, 0.65), rgba(110, 255, 178, 0) 66%);
+}
+
+/* The value, so a 200K coin is obviously worth walking over for. */
+.drop__tag {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 2px);
+  padding: 1px 6px 2px;
+  border: 2px solid rgba(18, 10, 4, 0.8);
+  border-radius: 7px;
+  background: rgba(28, 18, 9, 0.9);
+  font-size: clamp(9px, 0.75vw, 12px);
+  white-space: nowrap;
+  @include game-text(rgba(18, 10, 4, 0.9), 1px);
+}
+
+@keyframes glint-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}

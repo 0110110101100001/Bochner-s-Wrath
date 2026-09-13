@@ -1,0 +1,134 @@
+@use '../../styles/tokens' as *;
+
+.resource-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.res {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  animation: res-drop 0.5s $ease-spring backwards;
+
+  &:nth-child(2) {
+    animation-delay: 0.06s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.12s;
+  }
+}
+
+@keyframes res-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.res__icon {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: clamp(34px, 2.5vw, 44px);
+  aspect-ratio: 1;
+  margin-right: -12px;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.45));
+
+  .res-icon {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.res__meter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: clamp(120px, 10vw, 172px);
+  height: clamp(26px, 2vw, 32px);
+  padding: 0 12px 0 22px;
+  border: 2px solid rgba(18, 10, 4, 0.85);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(26, 16, 8, 0.9), rgba(46, 30, 16, 0.86));
+  box-shadow:
+    inset 0 3px 6px rgba(0, 0, 0, 0.55),
+    0 3px 0 rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.res__meter--gems {
+  min-width: clamp(76px, 6vw, 104px);
+  justify-content: center;
+  padding: 0 14px;
+}
+
+.res__fill {
+  position: absolute;
+  inset: 2px;
+  border-radius: 999px;
+  transform-origin: 0 50%;
+  opacity: 0.55;
+}
+
+.res--gold .res__fill {
+  background: linear-gradient(180deg, #ffd964, #d98f0c);
+}
+
+.res--elixir .res__fill {
+  background: linear-gradient(180deg, #d98cff, #8b2fd6);
+}
+
+.res__value {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(13px, 1.05vw, 17px);
+  font-variant-numeric: tabular-nums;
+  @include game-text(rgba(18, 10, 4, 0.9), 1.5px);
+}
+
+.res--gems {
+  cursor: pointer;
+  transition: transform 0.12s $ease-out;
+
+  &:active {
+    transform: translateY(2px);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(255, 236, 160, 0.9);
+    outline-offset: 3px;
+    border-radius: 999px;
+  }
+
+  &.is-poked .res__icon {
+    animation: gem-wobble 0.34s $ease-spring;
+  }
+}
+
+@keyframes gem-wobble {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  30% {
+    transform: rotate(-14deg) scale(1.18);
+  }
+  60% {
+    transform: rotate(11deg) scale(1.06);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}

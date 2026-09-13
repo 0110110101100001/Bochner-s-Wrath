@@ -1,0 +1,299 @@
+@use 'tokens' as *;
+
+/* ------------------------------------------------------------------ reset */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root,
+.app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #1b2a4a;
+  color: #fff;
+  font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(255, 195, 43, 0.45);
+}
+
+/* ----------------------------------------------- time-of-day light values */
+/* Set as data attributes on #root; everything downstream reads these vars.  */
+
+.app {
+  --window-glow: 0;
+  --star-opacity: 0;
+  --ambient-tint: rgba(255, 240, 200, 0);
+  --shadow-alpha: 0.28;
+  --shadow-skew: -12deg;
+  --shadow-stretch: 1;
+  --scene-saturate: 1;
+  --scene-brightness: 1;
+  --fg-far: #24402a;
+  --fg-near: #16291c;
+  --hill-far: #86b9dd;
+  --hill-near: #6ea3ba;
+  --hud-ink: #fff;
+}
+
+.app[data-tod='dawn'] {
+  --window-glow: 0.35;
+  --ambient-tint: rgba(255, 170, 108, 0.26);
+  --shadow-alpha: 0.2;
+  --shadow-skew: -30deg;
+  --shadow-stretch: 1.4;
+  --scene-saturate: 1.02;
+  --fg-far: #3a3350;
+  --fg-near: #241f38;
+  --hill-far: #a88bb0;
+  --hill-near: #8d6f8f;
+}
+
+.app[data-tod='day'] {
+  --window-glow: 0;
+  --ambient-tint: rgba(255, 250, 220, 0.05);
+  --shadow-alpha: 0.3;
+  --shadow-skew: -8deg;
+  --shadow-stretch: 0.88;
+  --fg-far: #26482c;
+  --fg-near: #17301d;
+  --hill-far: #8cc0e2;
+  --hill-near: #74a8b8;
+}
+
+.app[data-tod='dusk'] {
+  --window-glow: 0.6;
+  --ambient-tint: rgba(255, 124, 58, 0.32);
+  --shadow-alpha: 0.22;
+  --shadow-skew: 28deg;
+  --shadow-stretch: 1.45;
+  --scene-saturate: 1.05;
+  --scene-brightness: 0.96;
+  --fg-far: #3d2740;
+  --fg-near: #241629;
+  --hill-far: #a4667a;
+  --hill-near: #7c4358;
+}
+
+.app[data-tod='night'] {
+  --window-glow: 1;
+  --star-opacity: 1;
+  --ambient-tint: rgba(44, 66, 146, 0.44);
+  --shadow-alpha: 0.16;
+  --shadow-skew: 5deg;
+  --shadow-stretch: 1.08;
+  --scene-saturate: 0.82;
+  --scene-brightness: 0.78;
+  --fg-far: #14213a;
+  --fg-near: #0b1526;
+  --hill-far: #1d3160;
+  --hill-near: #142448;
+}
+
+/* --------------------------------------------------------------- controls */
+
+.btn {
+  --btn-face: linear-gradient(180deg, #7fd45a, #4aa233);
+  --btn-edge: #2c6a1f;
+  --btn-ink: #fff;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px 11px;
+  border: 2px solid rgba(22, 14, 5, 0.7);
+  border-radius: $radius-md;
+  background: var(--btn-face);
+  color: var(--btn-ink);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -8px 10px rgba(0, 0, 0, 0.18),
+    0 5px 0 var(--btn-edge),
+    0 9px 16px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 0.09s $ease-out,
+    box-shadow 0.09s $ease-out,
+    filter 0.15s ease;
+  @include game-text(rgba(20, 12, 4, 0.7), 1px);
+  font-size: 15px;
+  white-space: nowrap;
+  user-select: none;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.07);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -4px 8px rgba(0, 0, 0, 0.2),
+      0 1px 0 var(--btn-edge),
+      0 3px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(255, 236, 160, 0.9);
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    filter: saturate(0.35) brightness(0.8);
+  }
+}
+
+.btn--gold {
+  --btn-face: linear-gradient(180deg, #ffd964, #eda012);
+  --btn-edge: #a96b07;
+  --btn-ink: #4a2a02;
+}
+
+.btn--gem {
+  --btn-face: linear-gradient(180deg, #6fe6ff, #17a9d8);
+  --btn-edge: #0d6f92;
+}
+
+.btn--stone {
+  --btn-face: linear-gradient(180deg, #b4bccd, #79839a);
+  --btn-edge: #4b5468;
+}
+
+.btn--danger {
+  --btn-face: linear-gradient(180deg, #ff8878, #d6402d);
+  --btn-edge: #8d2317;
+}
+
+.btn--small {
+  padding: 6px 13px 7px;
+  font-size: 13px;
+  border-radius: $radius-sm;
+}
+
+/* Round icon button carved out of stone. */
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid rgba(20, 12, 5, 0.7);
+  border-radius: 50%;
+  background: linear-gradient(180deg, #c7cedd, #7c869c);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -6px 8px rgba(0, 0, 0, 0.22),
+    0 4px 0 #495267,
+    0 8px 14px rgba(0, 0, 0, 0.35);
+  color: #2d2313;
+  transition:
+    transform 0.1s $ease-out,
+    box-shadow 0.1s $ease-out,
+    filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+
+  &:active {
+    transform: translateY(3px);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.4),
+      0 1px 0 #495267,
+      0 3px 7px rgba(0, 0, 0, 0.3);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(255, 236, 160, 0.9);
+    outline-offset: 2px;
+  }
+}
+
+.panel {
+  @include wood-panel;
+}
+
+.panel__title {
+  @include game-text;
+  font-size: 20px;
+  margin: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Themed scrollbars so panels never show the default grey ones. */
+.scroll-area {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 214, 140, 0.6) rgba(0, 0, 0, 0.25);
+
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.28);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #d9a85f, #96682f);
+    border: 2px solid rgba(20, 12, 5, 0.55);
+    border-radius: 10px;
+  }
+}
+
+/* ---------------------------------------------------------- motion policy */
+/* `.no-motion` is set by the settings toggle; the media query covers the OS. */
+
+.no-motion *,
+.no-motion *::before,
+.no-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
