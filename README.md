@@ -98,8 +98,9 @@ site if what you typed looks like a URL. Focusing the field pulls the camera
 towards the Search Hall and the hall's lens starts pulsing.
 
 **Shortcuts.** Wooden signposts along the front of the island. Raising a new
-one costs 1 000 000 gold — the Builder will say no if the treasury is short.
-Editing and demolishing are free. Defaults live in `src/storage/defaults.ts`. Add, rename,
+one costs 1 000 000 gold and repainting an existing one 500 000 — the Builder
+will say no if the treasury is short. Saving without changing anything, and
+demolishing, are free. Defaults live in `src/storage/defaults.ts`. Add, rename,
 re-point or demolish them; icons come from Chrome's own favicon cache via the
 `favicon` permission, so the page makes no network requests at all.
 

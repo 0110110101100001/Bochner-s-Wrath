@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Builder's Tab",
-  "version": "2.2.0",
+  "version": "2.3.1",
   "description": "Your new tab is now a village. The Builder is not thrilled about it.",
   "minimum_chrome_version": "110",
   "chrome_url_overrides": {

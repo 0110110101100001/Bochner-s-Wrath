@@ -72,7 +72,7 @@ export function GoldStorage({ level, active }: ArtProps) {
       <ellipse cx="110" cy="120" rx="66" ry="25" fill="#9a8a67" />
       <ellipse cx="110" cy="118" rx="58" ry="19" fill="#5f5138" />
       <path
-        d={`M56,116 Q110,${86 - level * 6} 164,116 Q110,138 56,116 Z`}
+        d={`M56,116 Q110,${86 - Math.min(level, 5) * 6} 164,116 Q110,138 56,116 Z`}
         fill="#e0a417"
       />
       {coins.map((c, i) => (

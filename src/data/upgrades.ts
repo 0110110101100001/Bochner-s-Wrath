@@ -32,6 +32,31 @@ function levels(costKind: Exclude<ResourceKind, 'gems'>, tuples: LevelTuple[]): 
   }))
 }
 
+/**
+ * Storage levels 2..10. Production is multiplied by the level, so a maxed
+ * storage pours ten times what it started with; the bill climbs to match.
+ */
+function storageLevels(costKind: Exclude<ResourceKind, 'gems'>, what: string): UpgradeLevelDef[] {
+  const costs = [
+    900_000, 2_200_000, 4_000_000, 7_000_000, 11_000_000, 16_000_000, 23_000_000, 32_000_000,
+    45_000_000,
+  ]
+  return levels(
+    costKind,
+    costs.map((cost, i): LevelTuple => {
+      const level = i + 2
+      return [
+        `${what} Storage Lv${level}`,
+        `${what} production ×${level}.`,
+        cost,
+        Math.min(13, level - 1),
+        20 + i * 4,
+        164 + i * 208,
+      ]
+    }),
+  )
+}
+
 export const UPGRADES: UpgradeDef[] = [
   {
     // Gold is stored with elixir money, and vice versa. Obviously.
@@ -39,20 +64,14 @@ export const UPGRADES: UpgradeDef[] = [
     name: 'Gold Storage',
     buildingId: 'gold-storage',
     icon: 'coin',
-    levels: levels('elixir', [
-      ['Gold Storage Lv2', 'Doubles gold production. This one actually works.', 900_000, 1, 22, 164],
-      ['Gold Storage Lv3', 'Triples gold production. Still not enough for gems.', 2_600_000, 3, 34, 486],
-    ]),
+    levels: storageLevels('elixir', 'Gold'),
   },
   {
     id: 'elixir-storage',
     name: 'Elixir Storage',
     buildingId: 'elixir-storage',
     icon: 'droplet',
-    levels: levels('gold', [
-      ['Elixir Storage Lv2', 'Doubles elixir production.', 900_000, 1, 22, 164],
-      ['Elixir Storage Lv3', 'Triples elixir production. Do not drink it faster.', 2_600_000, 3, 34, 486],
-    ]),
+    levels: storageLevels('gold', 'Elixir'),
   },
   {
     id: 'weather-station',

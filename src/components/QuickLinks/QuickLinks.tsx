@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import type { Shortcut } from '@/types'
 import { Dialog } from '@/components/Common/Dialog'
 import { GoldIcon, PlusIcon } from '@/components/Common/Icons'
-import { SHORTCUT_COST } from '@/data/economy'
+import { SHORTCUT_COST, SHORTCUT_EDIT_COST } from '@/data/economy'
 import { NO_GOLD_LINES } from '@/data/jokes'
 import { useBuilder } from '@/hooks/useBuilder'
 import { useSfx } from '@/hooks/useSfx'
@@ -24,19 +24,30 @@ export function QuickLinks() {
   const sfx = useSfx()
   const [draft, setDraft] = useState<Draft | null>(null)
 
-  // Raising a new signpost is a build like any other. Editing one is free.
+  // Raising a signpost is a build; repainting one is a smaller build.
   const canAfford = state.resources.gold >= SHORTCUT_COST
 
-  const refuse = useCallback(() => {
-    sfx('deny')
-    pushToast({
-      title: 'Not enough gold.',
-      body: `A signpost costs ${formatAmount(SHORTCUT_COST)}.`,
-      tone: 'danger',
-      ttl: 3800,
-    })
-    builder.say(pick(NO_GOLD_LINES), { mood: 'disappointed', ms: 3000, lockMs: 2200 })
-  }, [sfx, pushToast, builder])
+  const refuse = useCallback(
+    (cost: number) => {
+      sfx('deny')
+      pushToast({
+        title: 'Not enough gold.',
+        body: `That costs ${formatAmount(cost)}.`,
+        tone: 'danger',
+        ttl: 3800,
+      })
+      builder.say(pick(NO_GOLD_LINES), { mood: 'disappointed', ms: 3000, lockMs: 2200 })
+    },
+    [sfx, pushToast, builder],
+  )
+
+  // Saving an unchanged signpost is free; the Builder is not a monster.
+  const original = draft?.id ? state.shortcuts.find((s) => s.id === draft.id) : undefined
+  const edited =
+    !!original &&
+    (original.label !== (draft?.label.trim() || original.label) ||
+      original.url !== normalizeUrl(draft?.url ?? ''))
+  const editCost = edited ? SHORTCUT_EDIT_COST : 0
 
   const save = useCallback(() => {
     if (!draft) return
@@ -45,8 +56,9 @@ export function QuickLinks() {
     const label = draft.label.trim() || hostOf(url)
     const isNew = !draft.id
 
-    if (isNew && state.resources.gold < SHORTCUT_COST) {
-      refuse()
+    const price = isNew ? SHORTCUT_COST : editCost
+    if (state.resources.gold < price) {
+      refuse(price)
       return
     }
 
@@ -55,10 +67,10 @@ export function QuickLinks() {
       : [...state.shortcuts, { id: uid('link'), label, url }]
 
     actions.setShortcuts(next.slice(0, 10))
-    if (isNew) actions.addResources({ gold: -SHORTCUT_COST })
-    sfx(isNew ? 'hammer' : 'pop')
+    if (price > 0) actions.addResources({ gold: -price })
+    sfx(price > 0 ? 'hammer' : 'pop')
     setDraft(null)
-  }, [draft, state.shortcuts, state.resources.gold, actions, sfx, refuse])
+  }, [draft, state.shortcuts, state.resources.gold, editCost, actions, sfx, refuse])
 
   const remove = useCallback(() => {
     if (!draft?.id) return
@@ -84,7 +96,7 @@ export function QuickLinks() {
             type="button"
             className={`signpost signpost--add ${canAfford ? '' : 'is-broke'}`}
             style={{ animationDelay: `${state.shortcuts.length * 0.05 + 0.3}s` }}
-            onClick={() => (canAfford ? setDraft({ ...EMPTY_DRAFT }) : refuse())}
+            onClick={() => (canAfford ? setDraft({ ...EMPTY_DRAFT }) : refuse(SHORTCUT_COST))}
             aria-label={`Build a shortcut for ${formatAmount(SHORTCUT_COST)} gold`}
           >
             <span className="signpost__board">
@@ -122,7 +134,11 @@ export function QuickLinks() {
               onClick={save}
               disabled={!draft?.url.trim() || (!draft?.id && !canAfford)}
             >
-              {draft?.id ? 'Save' : `Raise it — ${formatCompact(SHORTCUT_COST)}`}
+              {draft?.id
+                ? editCost > 0
+                  ? `Save — ${formatCompact(editCost)}`
+                  : 'Save'
+                : `Raise it — ${formatCompact(SHORTCUT_COST)}`}
             </button>
           </>
         }

@@ -7,8 +7,8 @@ import type { ResourceKind } from '@/types'
 
 export const PRODUCTION = {
   /** Per hour, at storage level 1. Multiplied by the storage's level. */
-  goldPerHour: 120_000,
-  elixirPerHour: 120_000,
+  goldPerHour: 240_000,
+  elixirPerHour: 240_000,
   /** Storages stop filling after this, so nothing accrues forever. */
   capHours: 12,
   /** Below this, the collector bubble stays hidden. */
@@ -35,6 +35,9 @@ export function fillRatio(since: number, now: number): number {
 
 /** What the Builder charges to put up one new signpost. */
 export const SHORTCUT_COST = 1_000_000
+
+/** Repainting an existing signpost. Only charged when something changes. */
+export const SHORTCUT_EDIT_COST = 500_000
 
 /** One-off price of the Weather Station, bought straight from its own slot. */
 export const WEATHER_STATION_COST = 10_000_000
