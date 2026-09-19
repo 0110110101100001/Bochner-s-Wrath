@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { Settings as SettingsShape } from '@/types'
 import { Dialog } from '@/components/Common/Dialog'
 import { useSfx } from '@/hooks/useSfx'
@@ -31,7 +31,6 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
   const { state, actions } = useVillageStore()
   const { pushToast } = useStage()
   const sfx = useSfx()
-  const fileRef = useRef<HTMLInputElement>(null)
   const [confirmReset, setConfirmReset] = useState(false)
 
   const toggle = useCallback(
@@ -40,36 +39,6 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
       sfx('pop')
     },
     [actions, state.settings, sfx],
-  )
-
-  const exportJson = useCallback(() => {
-    const blob = new Blob([actions.exportState()], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'builders-tab-village.json'
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
-    pushToast({ title: 'Village exported.', body: 'Keep it somewhere safe.', tone: 'gem', ttl: 3200 })
-  }, [actions, pushToast])
-
-  const importJson = useCallback(
-    (file: File) => {
-      const reader = new FileReader()
-      reader.onload = () => {
-        try {
-          actions.importState(JSON.parse(String(reader.result)))
-          pushToast({ title: 'Village imported.', tone: 'gem', ttl: 3200 })
-        } catch {
-          sfx('deny')
-          pushToast({ title: 'That file is not a village.', tone: 'danger', ttl: 3600 })
-        }
-      }
-      reader.readAsText(file)
-    },
-    [actions, pushToast, sfx],
   )
 
   return (
@@ -140,30 +109,6 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
           <Stat label="Tabs opened" value={formatAmount(state.tabOpens)} />
           <Stat label="Wall level" value={formatAmount(state.wallLevel)} />
           <Stat label="Builders" value="1" />
-        </div>
-
-        <div className="settings__row">
-          <button type="button" className="btn btn--stone btn--small" onClick={exportJson}>
-            Export JSON
-          </button>
-          <button
-            type="button"
-            className="btn btn--stone btn--small"
-            onClick={() => fileRef.current?.click()}
-          >
-            Import JSON
-          </button>
-          <input
-            ref={fileRef}
-            className="sr-only"
-            type="file"
-            accept="application/json,.json"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) importJson(file)
-              e.target.value = ''
-            }}
-          />
         </div>
 
         <div className="settings__danger">

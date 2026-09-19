@@ -1,6 +1,5 @@
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -10,7 +9,7 @@ import {
 } from 'react'
 import type { ActiveUpgrade, Resources, Settings, Shortcut, UpgradeId, VillageState } from '@/types'
 import { createDefaultState } from '@/storage/defaults'
-import { clearState, loadState, reconcile, saveState } from '@/storage/villageStorage'
+import { clearState, loadState, saveState } from '@/storage/villageStorage'
 import { PERSONAL_BREAK_WINDOW } from '@/data/events'
 
 type Action =
@@ -40,8 +39,12 @@ function reducer(state: VillageState, action: Action): VillageState {
     case 'resources': {
       const next = { ...state.resources }
       for (const [key, value] of Object.entries(action.delta)) {
+        if (!Object.hasOwn(next, key)) continue
         const kind = key as keyof Resources
-        next[kind] = Math.max(0, next[kind] + (value ?? 0))
+        // A non-finite delta would poison the balance for good: NaN survives
+        // Math.max, and every `balance < cost` check then reads as affordable.
+        if (typeof value !== 'number' || !Number.isFinite(value)) continue
+        next[kind] = Math.max(0, next[kind] + value)
       }
       return { ...state, resources: next }
     }
@@ -51,11 +54,16 @@ function reducer(state: VillageState, action: Action): VillageState {
 
     case 'upgrade/start': {
       if (state.activeUpgrades.some((u) => u.upgradeId === action.upgrade.upgradeId)) return state
+      // The UI checks this too, but the reducer is the last gate: without it a
+      // negative cost reads as a payout, and a short balance silently clamps
+      // to zero instead of failing the purchase.
+      if (!Number.isFinite(action.cost) || action.cost < 0) return state
+      if (state.resources[action.costKind] < action.cost) return state
       return {
         ...state,
         resources: {
           ...state.resources,
-          [action.costKind]: Math.max(0, state.resources[action.costKind] - action.cost),
+          [action.costKind]: state.resources[action.costKind] - action.cost,
         },
         activeUpgrades: [...state.activeUpgrades, action.upgrade],
       }
@@ -134,8 +142,6 @@ export interface VillageActions {
   bumpWall: () => void
   finishOnboarding: () => void
   resetVillage: () => void
-  importState: (raw: unknown) => void
-  exportState: () => string
 }
 
 interface StoreValue {
@@ -194,20 +200,14 @@ export function VillageStoreProvider({ children }: { children: ReactNode }) {
         void clearState()
         dispatch({ type: 'replace', state: createDefaultState() })
       },
-      importState: (raw) => dispatch({ type: 'replace', state: reconcile(raw) }),
-      exportState: () => '',
     }),
     [],
   )
 
-  // exportState needs the live state, so it is patched in outside the memo.
-  const stateRef = useRef(state)
-  stateRef.current = state
-  const exportState = useCallback(() => JSON.stringify(stateRef.current, null, 2), [])
 
   const value = useMemo<StoreValue>(
-    () => ({ state, ready: readyRef.current, actions: { ...actions, exportState } }),
-    [state, actions, exportState],
+    () => ({ state, ready: readyRef.current, actions }),
+    [state, actions],
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

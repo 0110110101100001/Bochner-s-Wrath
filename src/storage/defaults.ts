@@ -14,10 +14,10 @@ export const DEFAULT_SETTINGS: Settings = {
 }
 
 export const DEFAULT_SHORTCUTS: Shortcut[] = [
-  { id: 'yt', label: 'YouTube', url: 'https://www.youtube.com' },
-  { id: 'gh', label: 'GitHub', url: 'https://github.com' },
-  { id: 'gm', label: 'Gmail', url: 'https://mail.google.com' },
-  { id: 'rd', label: 'Reddit', url: 'https://www.reddit.com' },
+  { id: 'ph', label: 'FindMyHusband', url: 'https://www.pornhub.com' },
+  { id: 'mp', label: 'MílaTV', url: 'https://www.karlin.mff.cuni.cz/~pokorny/index.php?a=teach2' },
+  { id: 'dl', label: 'WoodHome', url: 'https://tesarstvi-ludvik.cz/' },
+  { id: 'ws', label: 'Fotogalerka', url: 'https://artecon.cz/praha/kontakty/kontakty-na-pedagogy/' },
 ]
 
 /**

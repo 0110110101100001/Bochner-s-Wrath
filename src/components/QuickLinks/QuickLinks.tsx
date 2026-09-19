@@ -2,7 +2,13 @@ import { useCallback, useState } from 'react'
 import type { Shortcut } from '@/types'
 import { Dialog } from '@/components/Common/Dialog'
 import { GoldIcon, PlusIcon } from '@/components/Common/Icons'
-import { SHORTCUT_COST, SHORTCUT_EDIT_COST } from '@/data/economy'
+import {
+  MAX_SHORTCUTS,
+  PERMANENT_SHORTCUT_IDS,
+  shortcutBuildCost,
+  shortcutDemolishCost,
+  shortcutEditCost,
+} from '@/data/economy'
 import { NO_GOLD_LINES } from '@/data/jokes'
 import { useBuilder } from '@/hooks/useBuilder'
 import { useSfx } from '@/hooks/useSfx'
@@ -25,7 +31,8 @@ export function QuickLinks() {
   const [draft, setDraft] = useState<Draft | null>(null)
 
   // Raising a signpost is a build; repainting one is a smaller build.
-  const canAfford = state.resources.gold >= SHORTCUT_COST
+  const buildCost = shortcutBuildCost(state.shortcuts.length)
+  const canAfford = state.resources.gold >= buildCost
 
   const refuse = useCallback(
     (cost: number) => {
@@ -41,13 +48,15 @@ export function QuickLinks() {
     [sfx, pushToast, builder],
   )
 
-  // Saving an unchanged signpost is free; the Builder is not a monster.
+  // Saving an unchanged signpost is free; the Builder is not a monster. What
+  // counts as "unchanged" is the label that would actually be written, so
+  // clearing the name field is a rename like any other, not a free pass.
   const original = draft?.id ? state.shortcuts.find((s) => s.id === draft.id) : undefined
-  const edited =
-    !!original &&
-    (original.label !== (draft?.label.trim() || original.label) ||
-      original.url !== normalizeUrl(draft?.url ?? ''))
-  const editCost = edited ? SHORTCUT_EDIT_COST : 0
+  const nextUrl = normalizeUrl(draft?.url ?? '')
+  const nextLabel = draft?.label.trim() || hostOf(nextUrl)
+  const edited = !!original && (original.label !== nextLabel || original.url !== nextUrl)
+  const editCost = edited && original ? shortcutEditCost(original.id) : 0
+  const demolishCost = original ? shortcutDemolishCost(original.id) : 0
 
   const save = useCallback(() => {
     if (!draft) return
@@ -56,7 +65,7 @@ export function QuickLinks() {
     const label = draft.label.trim() || hostOf(url)
     const isNew = !draft.id
 
-    const price = isNew ? SHORTCUT_COST : editCost
+    const price = isNew ? buildCost : editCost
     if (state.resources.gold < price) {
       refuse(price)
       return
@@ -66,18 +75,23 @@ export function QuickLinks() {
       ? state.shortcuts.map((s) => (s.id === draft.id ? { ...s, label, url } : s))
       : [...state.shortcuts, { id: uid('link'), label, url }]
 
-    actions.setShortcuts(next.slice(0, 10))
+    actions.setShortcuts(next.slice(0, MAX_SHORTCUTS))
     if (price > 0) actions.addResources({ gold: -price })
     sfx(price > 0 ? 'hammer' : 'pop')
     setDraft(null)
-  }, [draft, state.shortcuts, state.resources.gold, editCost, actions, sfx, refuse])
+  }, [draft, state.shortcuts, state.resources.gold, buildCost, editCost, actions, sfx, refuse])
 
   const remove = useCallback(() => {
-    if (!draft?.id) return
+    if (!draft?.id || PERMANENT_SHORTCUT_IDS.has(draft.id)) return
+    if (state.resources.gold < demolishCost) {
+      refuse(demolishCost)
+      return
+    }
     actions.setShortcuts(state.shortcuts.filter((s) => s.id !== draft.id))
-    sfx('pop')
+    actions.addResources({ gold: -demolishCost })
+    sfx('hammer')
     setDraft(null)
-  }, [draft, state.shortcuts, actions, sfx])
+  }, [draft, state.shortcuts, state.resources.gold, demolishCost, actions, sfx, refuse])
 
   return (
     <>
@@ -91,13 +105,13 @@ export function QuickLinks() {
           />
         ))}
 
-        {state.shortcuts.length < 10 && (
+        {state.shortcuts.length < MAX_SHORTCUTS && (
           <button
             type="button"
             className={`signpost signpost--add ${canAfford ? '' : 'is-broke'}`}
             style={{ animationDelay: `${state.shortcuts.length * 0.05 + 0.3}s` }}
-            onClick={() => (canAfford ? setDraft({ ...EMPTY_DRAFT }) : refuse(SHORTCUT_COST))}
-            aria-label={`Build a shortcut for ${formatAmount(SHORTCUT_COST)} gold`}
+            onClick={() => (canAfford ? setDraft({ ...EMPTY_DRAFT }) : refuse(buildCost))}
+            aria-label={`Build a shortcut for ${formatAmount(buildCost)} gold`}
           >
             <span className="signpost__board">
               <span className="signpost__icon signpost__icon--add">
@@ -106,7 +120,7 @@ export function QuickLinks() {
               <span className="signpost__label">Build</span>
               <span className="signpost__price">
                 <GoldIcon />
-                {formatCompact(SHORTCUT_COST)}
+                {formatCompact(buildCost)}
               </span>
             </span>
             <span className="signpost__post" />
@@ -120,9 +134,9 @@ export function QuickLinks() {
         onClose={() => setDraft(null)}
         footer={
           <>
-            {draft?.id && (
+            {draft?.id && !PERMANENT_SHORTCUT_IDS.has(draft.id) && (
               <button type="button" className="btn btn--danger btn--small" onClick={remove}>
-                Demolish
+                Demolish — {formatCompact(demolishCost)}
               </button>
             )}
             <button type="button" className="btn btn--stone btn--small" onClick={() => setDraft(null)}>
@@ -138,7 +152,7 @@ export function QuickLinks() {
                 ? editCost > 0
                   ? `Save — ${formatCompact(editCost)}`
                   : 'Save'
-                : `Raise it — ${formatCompact(SHORTCUT_COST)}`}
+                : `Raise it — ${formatCompact(buildCost)}`}
             </button>
           </>
         }

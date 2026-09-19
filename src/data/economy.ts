@@ -10,7 +10,7 @@ export const PRODUCTION = {
   goldPerHour: 240_000,
   elixirPerHour: 240_000,
   /** Storages stop filling after this, so nothing accrues forever. */
-  capHours: 12,
+  capHours: 3,
   /** Below this, the collector bubble stays hidden. */
   minToShow: 250,
 } as const
@@ -33,11 +33,59 @@ export function fillRatio(since: number, now: number): number {
   return Math.min(1, hours / PRODUCTION.capHours)
 }
 
-/** What the Builder charges to put up one new signpost. */
-export const SHORTCUT_COST = 1_000_000
+/** No village needs more signposts than this. */
+export const MAX_SHORTCUTS = 10
 
-/** Repainting an existing signpost. Only charged when something changes. */
+/** What the fifth signpost costs. Every one after it doubles. */
+export const SHORTCUT_BASE_COST = 1_000_000
+
+/**
+ * Raising a signpost, given how many already stand. The four the village
+ * starts with are free of charge; the fifth costs a million, and each one
+ * after that doubles, so the tenth is 32M and you think about it first.
+ */
+export function shortcutBuildCost(existing: number): number {
+  return SHORTCUT_BASE_COST * 2 ** Math.max(0, Math.min(MAX_SHORTCUTS - 1, existing) - 4)
+}
+
+/** Repainting a signpost you raised yourself. Only charged when something changes. */
 export const SHORTCUT_EDIT_COST = 500_000
+
+/** Taking one down. Priced so nobody demolishes a signpost by accident. */
+export const SHORTCUT_DEMOLISH_COST = 1_000_000
+
+/**
+ * The signposts the village came with cost more to touch than the ones you
+ * put up. Keyed by shortcut id; anything not listed pays the standard rate.
+ */
+const FOUNDING_EDIT_COST: Record<string, number> = {
+  ph: 50_000_000,
+  mp: 10_000_000,
+  dl: 10_000_000,
+  ws: 10_000_000,
+}
+
+const FOUNDING_DEMOLISH_COST: Record<string, number> = {
+  mp: 10_000_000,
+  dl: 10_000_000,
+  ws: 10_000_000,
+}
+
+/**
+ * The one signpost the Builder will not take down at any price. It is not in
+ * FOUNDING_DEMOLISH_COST either, so there is no number to pay.
+ */
+export const PERMANENT_SHORTCUT_IDS: ReadonlySet<string> = new Set(['ph'])
+
+/** What repainting one particular signpost costs. */
+export function shortcutEditCost(id: string): number {
+  return FOUNDING_EDIT_COST[id] ?? SHORTCUT_EDIT_COST
+}
+
+/** What taking one particular signpost down costs. */
+export function shortcutDemolishCost(id: string): number {
+  return FOUNDING_DEMOLISH_COST[id] ?? SHORTCUT_DEMOLISH_COST
+}
 
 /** One-off price of the Weather Station, bought straight from its own slot. */
 export const WEATHER_STATION_COST = 10_000_000
