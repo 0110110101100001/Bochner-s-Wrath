@@ -41,8 +41,11 @@ export function useCollectors(): CollectorsApi {
   const { spawnFloat } = useStage()
   const sfx = useSfx()
 
-  // The numbers creep up slowly; once every 20s is plenty.
-  useTick(20_000)
+  // The numbers creep up slowly; once every 20s is plenty. The tick has to be
+  // a dependency of the memo below, which reads Date.now(): nothing else in its
+  // dependencies changes as time passes, so without it the bubble would freeze
+  // at whatever the storages held when the tab opened.
+  const tick = useTick(20_000)
 
   const collectors = useMemo(() => {
     const now = Date.now()
@@ -62,7 +65,10 @@ export function useCollectors(): CollectorsApi {
     return [build('gold', 'gold-storage'), build('elixir', 'elixir-storage')].filter(
       (c) => c.amount >= PRODUCTION.minToShow,
     )
-  }, [state.levels, state.collectors])
+    // `tick` is not read in the body, but it is what makes Date.now() move:
+    // it is the whole reason this recomputes while the tab sits open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.levels, state.collectors, tick])
 
   const collect = useCallback(
     (kind: Collectable) => {

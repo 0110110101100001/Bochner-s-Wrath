@@ -8,8 +8,8 @@ import {
   type ReactNode,
 } from 'react'
 import type { ActiveUpgrade, Resources, Settings, Shortcut, UpgradeId, VillageState } from '@/types'
-import { createDefaultState } from '@/storage/defaults'
-import { clearState, loadState, saveState } from '@/storage/villageStorage'
+import { createDefaultState, STORAGE_KEY } from '@/storage/defaults'
+import { clearState, loadState, reconcile, saveState } from '@/storage/villageStorage'
 import { PERSONAL_BREAK_WINDOW } from '@/data/events'
 
 type Action =
@@ -176,11 +176,42 @@ export function VillageStoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // Persist on a short debounce; the new tab is often closed within seconds.
+  const lastWrite = useRef('')
   useEffect(() => {
     if (!readyRef.current) return
-    const handle = window.setTimeout(() => void saveState(state), 180)
+    const handle = window.setTimeout(() => {
+      lastWrite.current = JSON.stringify(state)
+      void saveState(state)
+    }, 180)
     return () => window.clearTimeout(handle)
   }, [state])
+
+  /**
+   * Adopt what another new tab saved. Every tab holds the whole village in
+   * memory and writes all of it back, so without this the last tab to touch
+   * anything silently undoes the others: collect loot in one, click the wall
+   * in another, loot gone.
+   */
+  const liveState = useRef(state)
+  liveState.current = state
+  useEffect(() => {
+    if (typeof chrome === 'undefined' || !chrome.storage?.onChanged) return
+    const onChanged = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ) => {
+      if (areaName !== 'local' || !readyRef.current) return
+      const change = changes[STORAGE_KEY]
+      if (!change) return
+      const raw = JSON.stringify(change.newValue)
+      // Our own debounced write echoes back through here, and so does a write
+      // from a tab that already agreed with us. Neither is news.
+      if (raw === lastWrite.current || raw === JSON.stringify(liveState.current)) return
+      dispatch({ type: 'replace', state: reconcile(change.newValue) })
+    }
+    chrome.storage.onChanged.addListener(onChanged)
+    return () => chrome.storage.onChanged.removeListener(onChanged)
+  }, [])
 
   const actions = useMemo<VillageActions>(
     () => ({
